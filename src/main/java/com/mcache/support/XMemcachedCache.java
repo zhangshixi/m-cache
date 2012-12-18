@@ -7,11 +7,11 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
@@ -28,6 +28,7 @@ import net.rubyeye.xmemcached.utils.AddrUtil;
 
 import com.mcache.CacheException;
 import com.mcache.CasOperation;
+import com.mlogger.Loggers;
 
 /**
  * XMemcached repository engine implementation.
@@ -44,6 +45,8 @@ public class XMemcachedCache extends AbstractCache {
 	private Properties _props;
 	/** xmemcached client driver */
     private MemcachedClient _cache;
+    
+    private Loggers LOGGER = Loggers.getLoggers(XMemcachedCache.class);
     
     public static final String DEFAULT_XMEMCACHED_CONFIG = "xmemcached.properties";
 	
@@ -88,7 +91,7 @@ public class XMemcachedCache extends AbstractCache {
         }
 	    
 	    final ConfigLoader config = new ConfigLoader().load(defaultProps).load(_props);
-	    getLogger().debug("==> XMemcachedCacheDriver configurations: \n{0}", config.toString());
+	    LOGGER.debug("==> XMemcachedCacheDriver configurations: \n{0}", config.toString());
 	    
 	    try {
             initXMemcachedClient(config);
@@ -118,21 +121,21 @@ public class XMemcachedCache extends AbstractCache {
             try {
 				_cache.set(key, (int) expiredTime, value);
 			} catch (TimeoutException e) {
-				throw new CacheException("XMemcached driver put operation timeout.", e);
+				throw new CacheException("XMemcached put operation timeout.", e);
             } catch (InterruptedException e) {
-                throw new CacheException("XMemcached driver put operation thread interrupted.", e);
+                throw new CacheException("XMemcached put operation thread interrupted.", e);
             } catch (MemcachedException e) {
-                throw new CacheException("XMemcached driver exception.", e);
+                throw new CacheException("XMemcached exception.", e);
             }
         } else {
             try {
                 _cache.cas(key, (int) expiredTime, new XMemcachedCASOperation(operation));
             } catch (TimeoutException e) {
-                throw new CacheException("XMemcached driver cas put operation timeout.", e);
+                throw new CacheException("XMemcached cas put operation timeout.", e);
             } catch (InterruptedException e) {
-                throw new CacheException("XMemcached driver cas put operation thread interrupted.", e);
+                throw new CacheException("XMemcached cas put operation thread interrupted.", e);
             } catch (MemcachedException e) {
-                throw new CacheException("XMemcached driver cas put operation exception.", e);
+                throw new CacheException("XMemcached cas put operation exception.", e);
             }
         }
 
@@ -151,19 +154,19 @@ public class XMemcachedCache extends AbstractCache {
             try {
                 _cache.setWithNoReply(key, (int) expiredTime, value);
             } catch (InterruptedException e) {
-                throw new CacheException("XMemcached driver put operation thread interrupted.", e);
+                throw new CacheException("XMemcached put operation thread interrupted.", e);
             } catch (MemcachedException e) {
-                throw new CacheException("XMemcached driver exception.", e);
+                throw new CacheException("XMemcached exception.", e);
             }
         } else {
             try {
                 _cache.casWithNoReply(key, (int) expiredTime, new XMemcachedCASOperation(operation));
             } catch (TimeoutException e) {
-                throw new CacheException("XMemcached driver cas put operation timeout.", e);
+                throw new CacheException("XMemcached cas put operation timeout.", e);
             } catch (InterruptedException e) {
-                throw new CacheException("XMemcached driver cas put operation thread interrupted.", e);
+                throw new CacheException("XMemcached cas put operation thread interrupted.", e);
             } catch (MemcachedException e) {
-                throw new CacheException("XMemcached driver cas put operation exception.", e);
+                throw new CacheException("XMemcached cas put operation exception.", e);
             }
         }
 
@@ -181,12 +184,35 @@ public class XMemcachedCache extends AbstractCache {
         try {
             return _cache.get(key);
         } catch (TimeoutException e) {
-            throw new CacheException("XMemcached driver get operation timeout.", e);
+            throw new CacheException("XMemcached get operation timeout.", e);
         } catch (InterruptedException e) {
-            throw new CacheException("XMemcached driver get operation thread interrupted.", e);
+            throw new CacheException("XMemcached get operation thread interrupted.", e);
         } catch (MemcachedException e) {
-            throw new CacheException("XMemcached driver get operation exception.", e);
+            throw new CacheException("XMemcached get operation exception.", e);
         }
+    }
+    
+    @Override
+    public <T> Map<String, T> get(String[] keys) {
+        checkStates();
+        if (keys == null) {
+            throw new NullPointerException("keys");
+        } else if (keys.length == 0) {
+            return Collections.emptyMap();
+        }
+        
+        Map<String, T> resultMap = null;
+        try {
+            resultMap = _cache.get(Arrays.asList(keys));
+        } catch (TimeoutException e) {
+            throw new CacheException("XMemcached batch get operation timeout.", e);
+        } catch (InterruptedException e) {
+            throw new CacheException("XMemcached batch get operation thread interrupted.", e);
+        } catch (MemcachedException e) {
+            throw new CacheException("XMemcached batch get operation exception.", e);
+        }
+        
+        return resultMap;
     }
     
     @Override
@@ -203,106 +229,73 @@ public class XMemcachedCache extends AbstractCache {
         	
 			_cache.delete(key);
 		} catch (TimeoutException e) {
-			throw new CacheException("XMemcached driver delete operation timeout.", e);
+			throw new CacheException("XMemcached delete operation timeout.", e);
         } catch (InterruptedException e) {
-            throw new CacheException("XMemcached driver delete operation thread interrupted.", e);
+            throw new CacheException("XMemcached delete operation thread interrupted.", e);
         } catch (MemcachedException e) {
-            throw new CacheException("XMemcached driver delete operation exception.", e);
+            throw new CacheException("XMemcached delete operation exception.", e);
         }
         
         return value;
     }
 
     @Override
-    public <T> Future<T> asyncRemove(String key) {
-        checkStates();
-        checkKey(key);
-        if (key.isEmpty()) {
-            return null;
-        }
-        
-        T value = null;
-        try {
-        	value = get(key);
-        	
-            _cache.deleteWithNoReply(key);
-        } catch (InterruptedException e) {
-            throw new CacheException("XMemcached driver delete operation thread interrupted.", e);
-        } catch (MemcachedException e) {
-            throw new CacheException("XMemcached driver delete operation exception.", e);
-        }
-        
-        return new SucceedFuture<T>(value);
-    }
-
-    @Override
     public boolean clear() {
-        super.clear();
-        getLogger().error("XMemcachedDriver not support clear server!");
-        return false;
-    }
-    
-    @Override
-    public Future<Boolean> asyncClear() {
-    	super.asyncClear();
-    	getLogger().error("XMemcachedDriver not support async clear server!");
-    	return SucceedFuture.BOOLEAN_FALSE;
+        try {
+            _cache.flushAll();
+        } catch (TimeoutException e) {
+            throw new CacheException("XMemcached clear operation timeout.", e);
+        } catch (InterruptedException e) {
+            throw new CacheException("XMemcached clear operation thread interrupted.", e);
+        } catch (MemcachedException e) {
+            throw new CacheException("XMemcached clear operation exception.", e);
+        }
+        
+        return true;
     }
     
     @Override
     public long getNumber(String key) {
-        String value = (String) get(key);
-        return Long.parseLong(value.trim());
+        String value = get(key);
+        return value == null ? 0L : Long.parseLong(value);
     }
 
     @Override
-    public Future<Long> asyncIncrease(final String key, final long value) {
+    public long increase(String key, long value) {
         checkStates();
         checkKey(key);
         if (key.isEmpty()) {
-            return SucceedFuture.LONG_ZORE;
+            return 0L;
         }
         
-        return getThreadPoolManager().submit(new Callable<Long>() {
-
-            @Override
-            public Long call() throws Exception {
-                try {
-                    return Long.valueOf(_cache.incr(key, value, value));
-                } catch (TimeoutException e) {
-                    throw new CacheException("XMemcached driver increase operation timeout.", e);
-                } catch (InterruptedException e) {
-                    throw new CacheException("XMemcached driver increase operation thread interrupted.", e);
-                } catch (MemcachedException e) {
-                    throw new CacheException("XMemcached driver increase operation exception.", e);
-                }
-            }
-        });
+        try {
+            return _cache.incr(key, value, value);
+        } catch (TimeoutException e) {
+            throw new CacheException("XMemcached increase operation timeout.", e);
+        } catch (InterruptedException e) {
+            throw new CacheException("XMemcached increase operation thread interrupted.", e);
+        } catch (MemcachedException e) {
+            throw new CacheException("XMemcached increase operation exception.", e);
+        }
     }
 
     @Override
-    public Future<Long> asyncDecrease(final String key, final long value) {
+    public long decrease(final String key, final long value) {
         checkStates();
         checkKey(key);
         if (key.isEmpty()) {
-            return SucceedFuture.LONG_ZORE;
+            return 0L;
         }
         
-        return getThreadPoolManager().submit(new Callable<Long>() {
-
-            @Override
-            public Long call() throws Exception {
-                try {
-                    return Long.valueOf(_cache.decr(key, value, (-1 * value)));
-                } catch (TimeoutException e) {
-                    throw new CacheException("XMemcached driver decrease operation timeout.", e);
-                } catch (InterruptedException e) {
-                    throw new CacheException("XMemcached driver decrease operation thread interrupted.", e);
-                } catch (MemcachedException e) {
-                    throw new CacheException("XMemcached driver decrease operation exception.", e);
-                }
-            }
-        });
+        try {
+            return _cache.decr(key, value, (-1 * value));
+        } catch (TimeoutException e) {
+            throw new CacheException("XMemcached decrease operation timeout.", e);
+        } catch (InterruptedException e) {
+            throw new CacheException("XMemcached decrease operation thread interrupted.", e);
+        } catch (MemcachedException e) {
+            throw new CacheException("XMemcached decrease operation exception.", e);
+        }
     }
     
     // ---- private methods --------------------------------------------------------------------------

@@ -221,8 +221,8 @@ public interface Cache {
 	 *         <code>true</code> if and only if remove operation successful;
      *         <code>false</code> otherwise. 
 	 */
-	public <T> List<T> removes(String[] keys);
-	public <T> Future<List<T>> asyncRemoves(String[] keys);
+	public <T> List<T> remove(String[] keys);
+	public <T> Future<List<T>> asyncRemove(String[] keys);
 
 	/**
 	 * Clears cache.

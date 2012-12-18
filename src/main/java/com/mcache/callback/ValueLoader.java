@@ -1,7 +1,7 @@
 package com.mcache.callback;
 
-public interface ValueLoader {
+public interface ValueLoader<T> {
 	
-	public <T> T loadValue();
+	public T loadValue(Object param);
 	
 }

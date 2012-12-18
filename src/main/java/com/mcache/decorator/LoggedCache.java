@@ -183,15 +183,15 @@ public class LoggedCache extends CacheDecorator {
 	}
 
 	@Override
-	public <T> List<T> removes(String[] keys) {
-		List<T> results = getDelegateCache().removes(keys);
+	public <T> List<T> remove(String[] keys) {
+		List<T> results = getDelegateCache().remove(keys);
 		LOGGER.debug("Batch remove values from cache with keys={0}, results={1}.", Arrays.toString(keys), results);
 		return results;
 	}
 	
 	@Override
-	public <T> Future<List<T>> asyncRemoves(String[] keys) {
-		Future<List<T>> results = getDelegateCache().asyncRemoves(keys);
+	public <T> Future<List<T>> asyncRemove(String[] keys) {
+		Future<List<T>> results = getDelegateCache().asyncRemove(keys);
 		LOGGER.debug("Async batch remove values from cache with keys={0}.", Arrays.toString(keys));
 		return results;
 	}

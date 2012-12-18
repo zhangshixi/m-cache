@@ -19,7 +19,6 @@ import java.util.concurrent.TimeoutException;
 import com.mcache.Cache;
 import com.mcache.CasOperation;
 import com.mcache.util.ThreadPoolManager;
-import com.mlogger.Loggers;
 
 public abstract class AbstractCache implements Cache {
 
@@ -36,8 +35,6 @@ public abstract class AbstractCache implements Cache {
     protected static final int DEFAULT_THREAD_POOL_SIZE = 10;
     /** default expired time, in milliseconds */
     private static final long DEFAULT_EXPIRED_TIME = Integer.MAX_VALUE * 1000L;
-    
-    private static final Loggers LOGGER = Loggers.getLoggers(Cache.class);
     
 	public AbstractCache(String id) {
 		_id = id;
@@ -89,19 +86,19 @@ public abstract class AbstractCache implements Cache {
 		} else {
 			return get(key) != null;
 		}
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 
 	@Override
 	public boolean put(String key, Object value) {
 		return put(key, value, DEFAULT_EXPIRED_TIME);
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 	@Override
 	public Future<Boolean> asyncPut(String key, Object value) {
 		return asyncPut(key, value, DEFAULT_EXPIRED_TIME);
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 
 	@Override
@@ -127,13 +124,13 @@ public abstract class AbstractCache implements Cache {
 	@Override
 	public boolean put(String key, Object value, CasOperation<Object> operation) {
 		return put(key, value, DEFAULT_EXPIRED_TIME, operation);
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 	@Override
 	public Future<Boolean> asyncPut(String key, Object value, CasOperation<Object> operation) {
 		return asyncPut(key, value, DEFAULT_EXPIRED_TIME, operation);
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 	@Override
@@ -161,7 +158,7 @@ public abstract class AbstractCache implements Cache {
 			}
 			
 		});
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 //	@Override
@@ -191,6 +188,7 @@ public abstract class AbstractCache implements Cache {
 		}
 		
 		return Collections.unmodifiableMap(resultMap);
+		// maybe subclass need re-implement
 	}
 
 //	@Override
@@ -208,50 +206,49 @@ public abstract class AbstractCache implements Cache {
 			}
 			
 		});
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 	@Override
-	public <T> List<T> removes(String[] keys) {
+	public <T> List<T> remove(String[] keys) {
 	    checkStates();
         if (keys == null) {
             throw new NullPointerException("keys");
-        }
-        if (keys.length == 0) {
+        }else if (keys.length == 0) {
             return Collections.emptyList();
         }
         
-        final List<T> futureList = new ArrayList<T>(keys.length);
+        final List<T> resultList = new ArrayList<T>(keys.length);
         T value = null;
         for (String key : keys) {
-            if (key == null || key.isEmpty()) {
-                continue;
+            if (key != null && !key.isEmpty()) {
+                value = remove(key);
+                resultList.add(value);
             }
-            value = remove(key);
-            futureList.add(value);
         }
         
-        return futureList;
+        return resultList;
+        // maybe subclass need re-implement
 	}
 	
 	@Override
-	public <T> Future<List<T>> asyncRemoves(final String[] keys) {
+	public <T> Future<List<T>> asyncRemove(final String[] keys) {
 		checkStates();
 		return getThreadPoolManager().submit(new Callable<List<T>>() {
 
 			@Override
 			public List<T> call() throws Exception {
-				return removes(keys);
+				return remove(keys);
 			}
 			
 		});
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 	@Override
 	public boolean clear() {
 	    return false;
-	    // maybe subclass need re-implemented
+	    // maybe subclass need re-implement
 	}
 	
 	@Override
@@ -264,18 +261,18 @@ public abstract class AbstractCache implements Cache {
 			}
 			
 		});
-		// maybe subclass need re-implemented
+		// maybe subclass need re-implement
 	}
 	
 	@Override
 	public long getNumber(String key) {
-		Object value = get(key);
-		return value == null ? 0L : ((Long) value).longValue();
-		// maybe subclass need re-implemented
+		Long cacheValue = get(key);
+		return cacheValue == null ? 0L : cacheValue.longValue();
+		// maybe subclass need re-implement
 	}
 
 	@Override
-	public long increase(final String key, final long value) {
+	public long increase(String key, long value) {
         Long cacheValue = get(key);
         long oldValue = cacheValue == null ? 0L : cacheValue.longValue();
         
@@ -283,19 +280,20 @@ public abstract class AbstractCache implements Cache {
         put(key, newValue);
         
         return newValue;
-	    // maybe subclass need re-implemented
+	    // maybe subclass need re-implement
 	}
 	
 	@Override
 	public Future<Long> asyncIncrease(final String key, final long value) {
-		Long cacheValue = get(key);
-		long oldValue = cacheValue == null ? 0L : cacheValue.longValue();
-		
-		Long newValue = Long.valueOf(oldValue + value);
-		asyncPut(key, newValue);
-		
-		return new SucceedFuture<Long>(newValue);
-		// maybe subclass need re-implemented
+	    return getThreadPoolManager().submit(new Callable<Long>() {
+
+            @Override
+            public Long call() throws Exception {
+                return increase(key, value);
+            }
+	        
+        });
+		// maybe subclass need re-implement
 	}
 	
 	@Override
@@ -307,19 +305,20 @@ public abstract class AbstractCache implements Cache {
         put(key, newValue);
         
         return newValue;
-	    // maybe subclass need re-implemented
+	    // maybe subclass need re-implement
 	}
 	
 	@Override
 	public Future<Long> asyncDecrease(final String key, final long value) {
-		Long cacheValue = get(key);
-		long oldValue = cacheValue == null ? 0L : cacheValue.longValue();
-		
-		Long newValue = Long.valueOf(oldValue - value);
-		asyncPut(key, newValue);
-		
-		return new SucceedFuture<Long>(newValue);
-		// maybe subclass need re-implemented
+		return getThreadPoolManager().submit(new Callable<Long>() {
+
+            @Override
+            public Long call() throws Exception {
+                return decrease(key, value);
+            }
+		    
+        });
+		// maybe subclass need re-implement
 	}
 	
 	// ---- protected methods --------------------------------------------------------------
@@ -335,10 +334,6 @@ public abstract class AbstractCache implements Cache {
         _threadPoolSize = threadPoolSize;
     }
     
-	protected Loggers getLogger() {
-		return LOGGER;
-	}
-	
 	protected ThreadPoolManager getThreadPoolManager() {
 	    return _threadPoolManager;
 	}
@@ -415,4 +410,5 @@ public abstract class AbstractCache implements Cache {
 		}
 		
 	}
+	
 }

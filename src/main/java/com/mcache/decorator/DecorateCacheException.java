@@ -4,8 +4,6 @@ package com.mcache.decorator;
  * Decorate cache exception.
  * 
  * @author 	<a href="mailto:xishizhang@gmail.com">ZhangShixi</a>
- * @version 1.0, 2/1/2012
- * @since 	JDK1.5
  */
 public class DecorateCacheException extends RuntimeException {
 

@@ -13,8 +13,6 @@ import com.mcache.CasOperation;
  * and decorate the given repository resources.
  * 
  * @author 	<a href="mailto:xishizhang@gmail.com">ZhangShixi</a>
- * @version 1.0, 2012-2-1
- * @since 	JDK1.5
  */
 public abstract class CacheDecorator implements Cache {
 
@@ -27,6 +25,9 @@ public abstract class CacheDecorator implements Cache {
 	 * @param cache cache repository engine.
 	 */
 	public CacheDecorator(Cache cache) {
+	    if (cache == null) {
+	        throw new NullPointerException("cache");
+	    }
 		_cache = cache;
 	}
 	
@@ -145,13 +146,13 @@ public abstract class CacheDecorator implements Cache {
 	}
 
 	@Override
-	public <T> List<T> removes(String[] keys) {
-		return _cache.removes(keys);
+	public <T> List<T> remove(String[] keys) {
+		return _cache.remove(keys);
 	}
 	
 	@Override
-	public <T> Future<List<T>> asyncRemoves(String[] keys) {
-		return _cache.asyncRemoves(keys);
+	public <T> Future<List<T>> asyncRemove(String[] keys) {
+		return _cache.asyncRemove(keys);
 	}
 
 	@Override

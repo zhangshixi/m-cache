@@ -1,21 +1,14 @@
-/**
- * f-club.cn
- * Copyright (c) 2009-2012 All Rights Reserved.
- */
 package com.mcache.support;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.mcache.CasOperation;
 
 /**
  * HashMap cache engine driver implementation.
- * 
- * @author michael
  */
 public class HashMapCache extends AbstractCache {
 
@@ -38,7 +31,6 @@ public class HashMapCache extends AbstractCache {
     }
     
     // ---- methods implementation ------------------------------------------------------------
-	
 	@Override
 	protected void doInitialize() {
 	}
@@ -80,18 +72,6 @@ public class HashMapCache extends AbstractCache {
     }
     
     @Override
-    public Future<Boolean> asyncPut(final String key, final Object value, final long expiredTime, CasOperation<Object> operation) {
-    	return getThreadPoolManager().submit(new Callable<Boolean>(){
-    		
-    		@Override
-    		public Boolean call() throws Exception {
-    			return Boolean.valueOf(put(key, value, expiredTime));
-    		}
-    		
-    	});
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String key) {
 		CacheEntry cacheEntry = _cache.get(key);
@@ -110,33 +90,9 @@ public class HashMapCache extends AbstractCache {
     }
     
     @Override
-    public <T> Future<T> asyncRemove(final String key) {
-    	return getThreadPoolManager().submit(new Callable<T>(){
-    		
-    		@Override
-    		public T call() throws Exception {
-    			return remove(key);
-    		}
-    		
-    	});
-    }
-
-    @Override
     public boolean clear() {
         _cache.clear();
         return true;
-    }
-    
-    @Override
-    public Future<Boolean> asyncClear() {
-    	return getThreadPoolManager().submit(new Callable<Boolean>(){
-    		
-    		@Override
-    		public Boolean call() throws Exception {
-    			return Boolean.valueOf(clear());
-    		}
-    		
-    	});
     }
     
     @Override
@@ -150,43 +106,33 @@ public class HashMapCache extends AbstractCache {
     }
 
     @Override
-    public Future<Long> asyncIncrease(final String key, final long value) {
-        return getThreadPoolManager().submit(new Callable<Long>() {
+    public long increase(String key, long value) {
+        CacheEntry cacheEntry = _cache.get(key);
+        
+        long oldValue = 0L;
+        if (cacheEntry != null && !cacheEntry.isExpired()) {
+            oldValue = ((Long) cacheEntry.getValue()).longValue();
+        }
 
-            @Override
-            public Long call() throws Exception {
-                long oldValue = 0L;
-                CacheEntry cacheEntry = _cache.get(key);
-                if (cacheEntry != null && !cacheEntry.isExpired()) {
-                    oldValue = ((Long) cacheEntry.getValue()).longValue();
-                }
-
-                Long newValue = Long.valueOf(oldValue + value);
-                _cache.put(key, new CacheEntry(key, newValue, UN_EXPIRED_TIME));
-                return newValue;
-            }
-            
-        });
+        Long newValue = Long.valueOf(oldValue + value);
+        _cache.put(key, new CacheEntry(key, newValue, UN_EXPIRED_TIME));
+        
+        return newValue;
     }
 
     @Override
-    public Future<Long> asyncDecrease(final String key, final long value) {
-        return getThreadPoolManager().submit(new Callable<Long>() {
+    public long decrease(final String key, final long value) {
+        CacheEntry cacheEntry = _cache.get(key);
 
-            @Override
-            public Long call() throws Exception {
-                long oldValue = 0L;
-                CacheEntry cacheEntry = _cache.get(key);
-                if (cacheEntry != null && !cacheEntry.isExpired()) {
-                    oldValue = ((Long) cacheEntry.getValue()).longValue();
-                }
-                
-                Long newValue = Long.valueOf(oldValue - value);
-                _cache.put(key, new CacheEntry(key, newValue, UN_EXPIRED_TIME));
-                return newValue;
-            }
-            
-        });
+        long oldValue = 0L;
+        if (cacheEntry != null && !cacheEntry.isExpired()) {
+            oldValue = ((Long) cacheEntry.getValue()).longValue();
+        }
+        
+        Long newValue = Long.valueOf(oldValue - value);
+        _cache.put(key, new CacheEntry(key, newValue, UN_EXPIRED_TIME));
+        
+        return newValue;
     }
 
     // ---- inner classes ---------------------------------------------------------------------

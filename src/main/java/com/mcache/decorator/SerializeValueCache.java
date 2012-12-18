@@ -23,6 +23,9 @@ public class SerializeValueCache extends CacheDecorator {
     
     public SerializeValueCache(Cache cache, Serializer serializer) {
     	super(cache);
+    	if (serializer == null) {
+    	    throw new NullPointerException("serializer");
+    	}
     	_serializer = serializer;
     }
 
@@ -114,6 +117,10 @@ public class SerializeValueCache extends CacheDecorator {
 
     // ---- private methods ------------------------------------------------------------------------------
     private byte[] serialize(Object target) {
+        if (target == null) {
+            return null;
+        }
+        
     	try {
 			return _serializer.serialize(target);
 		} catch (IOException e) {
@@ -122,6 +129,10 @@ public class SerializeValueCache extends CacheDecorator {
     }
     
     private <T> T deserialize(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return null;
+        }
+        
     	try {
 			return _serializer.deserialize(bytes);
     	} catch (IOException e) {

@@ -1,7 +1,3 @@
-/**
- * f-club.cn
- * Copyright (c) 2009-2012 All Rights Reserved.
- */
 package com.mcache.util;
 
 import java.util.concurrent.Callable;
@@ -14,9 +10,6 @@ import com.mlogger.Loggers;
 
 /**
  * Thread pool manager.
- * 
- * @author michael
- * @version $Id: ThreadPoolManager.java, v 0.1 2012-10-25 下午1:08:55 michael Exp $
  */
 public class ThreadPoolManager {
     
@@ -41,8 +34,7 @@ public class ThreadPoolManager {
     }
     
     public boolean isTerminated() {
-        checkThreadPoolStatus();
-        return isInitialized() && _threadPool.isTerminated();
+        return _threadPool.isTerminated();
     }
     
     public Future<?> submit(Runnable task) {
@@ -69,23 +61,21 @@ public class ThreadPoolManager {
         
         _threadPool.shutdown();
         try {
-            if (_threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!_threadPool.awaitTermination(2, TimeUnit.SECONDS)) {
                 _threadPool.shutdownNow();
                 
-                if (_threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
-                    LOGGER.error("Could not terminate the voucher producer thread pool!");
+                if (!_threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                    LOGGER.error("Could not terminate thread pool manager!");
                 }
             }
         } catch (InterruptedException e) {
             _threadPool.shutdownNow();
             Thread.currentThread().interrupt();
         }
-        _threadPool = null;
         _initialized = false;
         
         LOGGER.info("ThreadPoolManager has destroyed.");
     }
-    
     
     private void checkThreadPoolStatus() {
         if (!isInitialized()) {

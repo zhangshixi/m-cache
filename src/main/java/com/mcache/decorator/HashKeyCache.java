@@ -11,15 +11,13 @@ import java.util.concurrent.Future;
 import com.mcache.Cache;
 import com.mcache.CasOperation;
 import com.mtoolkit.hash.Hash;
-import com.mtoolkit.hash.support.Time33Hash;
+import com.mtoolkit.hash.support.GenericHash;
 
 /**
  * A decorate cache repository engine that provides use hash 
  * algorithm to hash the cache key before put into the cache repository.
  * 
  * @author 	<a href="mailto:xishizhang@gmail.com">ZhangShixi</a>
- * @version 1.0, 2/1/2012
- * @since 	JDK1.5
  * 
  * @see		com.mtoolkit.hash.Hash
  */
@@ -31,7 +29,7 @@ public class HashKeyCache extends CacheDecorator {
 	public static final String CACHE_KEY_PREFIX = "cache.hash.key.";
 	
 	public HashKeyCache(Cache cache) {
-		this(cache, Time33Hash.getInstance());
+		this(cache, GenericHash.getInstance());
 	}
 	
 	public HashKeyCache(Cache cache, Hash hash) {
@@ -144,9 +142,9 @@ public class HashKeyCache extends CacheDecorator {
 	}
 
 	@Override
-	public <T> List<T> removes(String[] keys) {
+	public <T> List<T> remove(String[] keys) {
 		if (keys == null || keys.length == 0) {
-			return getDelegateCache().removes(keys);
+			return getDelegateCache().remove(keys);
 		}
 
 		String[] hashKeys = new String[keys.length];
@@ -154,13 +152,13 @@ public class HashKeyCache extends CacheDecorator {
 			hashKeys[i] = hashCodeKey(keys[i]);
 		}
 
-		return getDelegateCache().removes(hashKeys);
+		return getDelegateCache().remove(hashKeys);
 	}
 	
 	@Override
-	public <T> Future<List<T>> asyncRemoves(String[] keys) {
+	public <T> Future<List<T>> asyncRemove(String[] keys) {
 		if (keys == null || keys.length == 0) {
-			return getDelegateCache().asyncRemoves(keys);
+			return getDelegateCache().asyncRemove(keys);
 		}
 		
 		String[] hashKeys = new String[keys.length];
@@ -168,7 +166,7 @@ public class HashKeyCache extends CacheDecorator {
 			hashKeys[i] = hashCodeKey(keys[i]);
 		}
 		
-		return getDelegateCache().asyncRemoves(hashKeys);
+		return getDelegateCache().asyncRemove(hashKeys);
 	}
 	
 	@Override

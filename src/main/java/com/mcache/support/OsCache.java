@@ -16,10 +16,6 @@ import com.opensymphony.oscache.web.filter.ExpiresRefreshPolicy;
 
 /**
  * Oscache repository engine driver implementation.
- * 
- * @author 	<a href="mailto:xishizhang@gmail.com">ZhangShixi</a>
- * @version 1.0, 2/1/2012
- * @since 	JDK1.5
  */
 public class OsCache extends AbstractCache {
 	
@@ -104,7 +100,7 @@ public class OsCache extends AbstractCache {
         if (key.isEmpty()) {
             return false;
         } else if (expiredTime <= 0) {
-            throw new IllegalArgumentException("expiredTime should non-positive: " + expiredTime);
+            throw new IllegalArgumentException("ExpiredTime should non-positive: " + expiredTime);
         }
         
         _cache.putInCache(key, value, new ExpiresRefreshPolicy((int) expiredTime / 1000));
@@ -121,7 +117,6 @@ public class OsCache extends AbstractCache {
 		try {
 			return (T) _cache.getFromCache(key);
 		} catch (NeedsRefreshException e) {
-			getLogger().error(e.getMessage(), e);
 			_cache.cancelUpdate(key);
 			return null;
 		}
@@ -148,16 +143,6 @@ public class OsCache extends AbstractCache {
 		_cache.flushAll();
 		
 		return true;
-	}
-	
-	@Override
-	public Future<Long> asyncIncrease(String key, long value) {
-		return super.asyncIncrease(key, value);
-	}
-
-	@Override
-	public Future<Long> asyncDecrease(String key, long value) {
-		return super.asyncDecrease(key, value);
 	}
 
 }

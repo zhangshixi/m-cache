@@ -1,7 +1,3 @@
-/**
- * f-club.cn
- * Copyright (c) 2009-2012 All Rights Reserved.
- */
 package com.mcache.support;
 
 import java.util.concurrent.Future;
@@ -12,9 +8,6 @@ import com.mcache.CasOperation;
  * Spymemcached client driver implementation.
  * <p>
  * See &lt;a htrf="http://code.google.com/p/spymemcached/"&gt;xmemcached&lt;/a&gt;
- * 
- * @author michael
- * @version $Id: SpymemcachedCacheDriver.java 63 2012-10-26 09:31:40Z xishizhang@gmail.com $
  */
 public class SpymemcachedCache extends AbstractCache {
 

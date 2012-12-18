@@ -151,15 +151,15 @@ public class SoftCache extends CacheDecorator {
     }
     
     @Override
-    public <T> List<T> removes(String[] keys) {
+    public <T> List<T> remove(String[] keys) {
     	// TODO:
-    	return getDelegateCache().removes(keys);
+    	return getDelegateCache().remove(keys);
     }
     
     @Override
-    public <T> Future<List<T>> asyncRemoves(String[] keys) {
+    public <T> Future<List<T>> asyncRemove(String[] keys) {
     	// TODO:
-    	return getDelegateCache().asyncRemoves(keys);
+    	return getDelegateCache().asyncRemove(keys);
     }
 
     @Override

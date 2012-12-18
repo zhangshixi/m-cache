@@ -74,27 +74,33 @@ public class LruCache extends CacheDecorator {
 	}
 
 	@Override
+	public boolean put(String key, Object value, Date expiredDate) {
+	    cycleKeyMap(key, false);
+	    return getDelegateCache().put(key, value, expiredDate);
+	}
+	
+	@Override
 	public Future<Boolean> asyncPut(String key, Object value, Date expiredDate) {
 		cycleKeyMap(key, true);
 		return getDelegateCache().asyncPut(key, value, expiredDate);
 	}
 	
 	@Override
-	public boolean put(String key, Object value, Date expiredDate) {
+	public boolean put(String key, Object value, CasOperation<Object> operation) {
 		cycleKeyMap(key, false);
-		return getDelegateCache().put(key, value, expiredDate);
+		return getDelegateCache().put(key, value, operation);
 	}
 	
 	@Override
 	public Future<Boolean> asyncPut(String key, Object value, CasOperation<Object> operation) {
-		cycleKeyMap(key, true);
-		return getDelegateCache().asyncPut(key, value, operation);
+	    cycleKeyMap(key, true);
+	    return getDelegateCache().asyncPut(key, value, operation);
 	}
 	
 	@Override
 	public boolean put(String key, Object value, long expiredTime, CasOperation<Object> operation) {
-		cycleKeyMap(key, false);
-		return getDelegateCache().put(key, value, expiredTime, operation);
+	    cycleKeyMap(key, false);
+	    return getDelegateCache().put(key, value, expiredTime, operation);
 	}
 	
 	@Override
@@ -129,7 +135,29 @@ public class LruCache extends CacheDecorator {
     	return result;
     }
     
-    // TODO: get ? getNumber ? increase ? decrease ?
+    @Override
+    public long increase(String key, long value) {
+        cycleKeyMap(key, false);
+        return getDelegateCache().increase(key, value);
+    }
+    
+    @Override
+    public Future<Long> asyncIncrease(String key, long value) {
+        cycleKeyMap(key, true);
+        return getDelegateCache().asyncIncrease(key, value);
+    }
+
+    @Override
+    public long decrease(String key, long value) {
+        cycleKeyMap(key, false);
+        return getDelegateCache().decrease(key, value);
+    }
+    
+    @Override
+    public Future<Long> asyncDecrease(String key, long value) {
+        cycleKeyMap(key, true);
+        return getDelegateCache().asyncDecrease(key, value);
+    }
     
     // ---- private methods ------------------------------------------------------------------------
     private void cycleKeyMap(String key, boolean async) {

@@ -18,8 +18,6 @@ import com.mtoolkit.util.GzipUtil;
  * cache value before put into the cache repository and uncompress it before return to user.
  * 
  * @author 	<a href="mailto:xishizhang@gmail.com">ZhangShixi</a>
- * @version 1.0, 2/1/2012
- * @since 	JDK1.5
  * 
  * @see		com.mtoolkit.util.GzipUtil
  */

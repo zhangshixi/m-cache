@@ -12,8 +12,6 @@ import com.mcache.CasOperation;
  * A virtual cache engine driver implementation.
  * 
  * @author 	<a href="mailto:xishizhang@gmail.com">ZhangShixi</a>
- * @version 1.0, 2/1/2012
- * @since 	JDK1.5
  */
 public class VirtualCache extends AbstractCache {
 
@@ -120,12 +118,12 @@ public class VirtualCache extends AbstractCache {
     }
     
     @Override
-    public <T> List<T> removes(String[] keys) {
+    public <T> List<T> remove(String[] keys) {
         return Collections.emptyList();
     }
     
     @Override
-    public <T> Future<List<T>> asyncRemoves(String[] keys) {
+    public <T> Future<List<T>> asyncRemove(String[] keys) {
     	List<T> result = Collections.emptyList();
     	return new SucceedFuture<List<T>>(result);
     }
