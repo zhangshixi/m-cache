@@ -17,15 +17,15 @@ public class LruCache extends CacheDecorator {
     private String _eldestKey;
     private Map<String, String> _keyMap;
     
-    public static final int DEFAULT_SIZE = 1024;
+    public static final int DEF_SIZE = 1024;
 
     public LruCache(Cache cache) {
-        this(cache, DEFAULT_SIZE);
+        this(cache, DEF_SIZE);
     }
     
     public LruCache(Cache cache, int size) {
     	super(cache);
-    	setSize(DEFAULT_SIZE);
+    	setSize(DEF_SIZE);
     }
 
     public int getSize() {
@@ -159,7 +159,7 @@ public class LruCache extends CacheDecorator {
         return getDelegateCache().asyncDecrease(key, value);
     }
     
-    // ---- private methods ------------------------------------------------------------------------
+    // ---- private methods
     private void cycleKeyMap(String key, boolean async) {
     	_keyMap.put(key, key);
     	if (_eldestKey != null) {

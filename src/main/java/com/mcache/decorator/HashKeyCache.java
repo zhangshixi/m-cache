@@ -194,7 +194,7 @@ public class HashKeyCache extends CacheDecorator {
 		return getDelegateCache().asyncDecrease(hashCodeKey(key), value);
 	}
 	
-	// ---- private methods ---------------------------------------------
+	// ---- private methods
 	private String hashCodeKey(String key) {
 		if (key == null || key.isEmpty()) {
 			return key;

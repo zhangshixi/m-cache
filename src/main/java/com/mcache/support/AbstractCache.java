@@ -28,18 +28,19 @@ public abstract class AbstractCache implements Cache {
 	private volatile boolean _initialized;
 	/** thread pool manager */
 	private ThreadPoolManager _threadPoolManager;
-	/** thread pool size */
-    private int _threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
+	/** async thread pool size */
+    private int _asyncThreadPoolSize = DEF_ASYNC_THREAD_POOL_SIZE;
     
     /** default thread pool size */
-    protected static final int DEFAULT_THREAD_POOL_SIZE = 10;
+    protected static final int DEF_ASYNC_THREAD_POOL_SIZE = 10;
     /** default expired time, in milliseconds */
-    private static final long DEFAULT_EXPIRED_TIME = Integer.MAX_VALUE * 1000L;
+    private static final long DEF_EXPIRED_TIME = Integer.MAX_VALUE * 1000L;
     
 	public AbstractCache(String id) {
 		_id = id;
 	}
 	
+    // ---- implement methods
 	/**
 	 * Initialize the cache driver.
 	 */
@@ -54,7 +55,7 @@ public abstract class AbstractCache implements Cache {
 	public void startup() {
 		if (!_initialized) {
 			doInitialize();
-			_threadPoolManager = new ThreadPoolManager(getThreadPoolSize());
+			_threadPoolManager = new ThreadPoolManager(getAsyncThreadPoolSize());
 			_initialized = true;
 		}
 	}
@@ -91,13 +92,13 @@ public abstract class AbstractCache implements Cache {
 
 	@Override
 	public boolean put(String key, Object value) {
-		return put(key, value, DEFAULT_EXPIRED_TIME);
+		return put(key, value, DEF_EXPIRED_TIME);
 		// maybe subclass need re-implement
 	}
 	
 	@Override
 	public Future<Boolean> asyncPut(String key, Object value) {
-		return asyncPut(key, value, DEFAULT_EXPIRED_TIME);
+		return asyncPut(key, value, DEF_EXPIRED_TIME);
 		// maybe subclass need re-implement
 	}
 
@@ -123,13 +124,13 @@ public abstract class AbstractCache implements Cache {
 	
 	@Override
 	public boolean put(String key, Object value, CasOperation<Object> operation) {
-		return put(key, value, DEFAULT_EXPIRED_TIME, operation);
+		return put(key, value, DEF_EXPIRED_TIME, operation);
 		// maybe subclass need re-implement
 	}
 	
 	@Override
 	public Future<Boolean> asyncPut(String key, Object value, CasOperation<Object> operation) {
-		return asyncPut(key, value, DEFAULT_EXPIRED_TIME, operation);
+		return asyncPut(key, value, DEF_EXPIRED_TIME, operation);
 		// maybe subclass need re-implement
 	}
 	
@@ -321,17 +322,17 @@ public abstract class AbstractCache implements Cache {
 		// maybe subclass need re-implement
 	}
 	
-	// ---- protected methods --------------------------------------------------------------
-	protected int getThreadPoolSize() {
-        return _threadPoolSize;
+	// ---- protected methods
+	protected int getAsyncThreadPoolSize() {
+        return _asyncThreadPoolSize;
     }
     
-    protected void setThreadPoolSize(int threadPoolSize) {
-        if (threadPoolSize <= 0) {
+    protected void setAsyncThreadPoolSize(int asyncThreadPoolSize) {
+        if (asyncThreadPoolSize <= 0) {
             throw new IllegalArgumentException(
-                "Thread pool size must be a positive number: " + threadPoolSize);
+                "Async thread pool size must positive: " + asyncThreadPoolSize);
         }
-        _threadPoolSize = threadPoolSize;
+        _asyncThreadPoolSize = asyncThreadPoolSize;
     }
     
 	protected ThreadPoolManager getThreadPoolManager() {
@@ -360,7 +361,7 @@ public abstract class AbstractCache implements Cache {
         return props;
     }
 	
-	// ---- private methods -------------------------------------------------------------------------------
+	// ---- private methods
 	private long checkExpiredDate(Date expiredDate) {
 		Date currentDate = Calendar.getInstance().getTime();
 		if (expiredDate.before(currentDate)) {
@@ -370,7 +371,7 @@ public abstract class AbstractCache implements Cache {
 		return expiredDate.getTime() - currentDate.getTime();
 	}
 
-	// ---- inner classes ---------------------------------------------------------------------------------
+	// ---- inner classes
 	public static class SucceedFuture<T> implements Future<T> {
 		
 		public static SucceedFuture<Boolean> BOOLEAN_TRUE  = new SucceedFuture<Boolean>(Boolean.TRUE);

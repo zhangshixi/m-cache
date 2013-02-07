@@ -22,7 +22,7 @@ public class MemcachedCache extends AbstractCache {
 	/** pool configuration file */
 	private Properties _props;
 	
-	// ---- constructors ---------------------------------------------------------
+	// ---- constructors
 	public MemcachedCache(String id, URL url) throws IOException {
 		this(id, url.openStream());
 	}
@@ -50,6 +50,7 @@ public class MemcachedCache extends AbstractCache {
 		_props = props;
 	}
 
+    // ---- implement methods
 	@Override
 	protected void doInitialize() {
 		// TODO Auto-generated method stub

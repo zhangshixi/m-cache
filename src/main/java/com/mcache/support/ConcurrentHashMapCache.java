@@ -16,7 +16,7 @@ private static final long UN_EXPIRED_TIME = -1L;
     
     private final Map<String, CacheEntry> _cache = new ConcurrentHashMap<String, CacheEntry>(100, 0.75F, 16);
     
-    // ---- constructors ------------------------------------------------------------------------------------
+    // ---- constructors
     public ConcurrentHashMapCache() {
         this(ConcurrentHashMapCache.class.getName());
     }
@@ -27,9 +27,10 @@ private static final long UN_EXPIRED_TIME = -1L;
     
     public ConcurrentHashMapCache(String id, int threadPoolSize) {
         super(id);
-        setThreadPoolSize(threadPoolSize);
+        setAsyncThreadPoolSize(threadPoolSize);
     }
     
+    // ---- implement methods
     @Override
     protected void doInitialize() {
     }
@@ -134,7 +135,7 @@ private static final long UN_EXPIRED_TIME = -1L;
         return newValue;
     }
 
-    // ---- inner classes ----------------------------------------------------------------
+    // ---- inner classes
     private class CacheEntry implements Serializable {
 
         private static final long serialVersionUID = 77803946779892716L;

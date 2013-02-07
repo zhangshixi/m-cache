@@ -16,7 +16,7 @@ public class HashMapCache extends AbstractCache {
 	
 	private final Map<String, CacheEntry> _cache = new HashMap<String, CacheEntry>(100, 0.75F);
 	
-	// ---- constructors ----------------------------------------------------------------------
+	// ---- constructors
     public HashMapCache() {
         this(HashMapCache.class.getName());
     }
@@ -27,10 +27,10 @@ public class HashMapCache extends AbstractCache {
     
     public HashMapCache(String id, int threadPoolSize) {
         super(id);
-        setThreadPoolSize(threadPoolSize);
+        setAsyncThreadPoolSize(threadPoolSize);
     }
     
-    // ---- methods implementation ------------------------------------------------------------
+    // ---- implement methods
 	@Override
 	protected void doInitialize() {
 	}
@@ -135,7 +135,7 @@ public class HashMapCache extends AbstractCache {
         return newValue;
     }
 
-    // ---- inner classes ---------------------------------------------------------------------
+    // ---- inner classes
     private class CacheEntry implements Serializable {
 
         private static final long serialVersionUID = 77803946779892716L;

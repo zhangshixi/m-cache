@@ -113,7 +113,7 @@ public class GzipValueCache extends CacheDecorator {
 		return Collections.unmodifiableMap(resultMap);
 	}
 	
-	// ---- private methods ----------------------------------------------------------------------------
+	// ---- private methods
 	private byte[] gzip(Object value) {
 		if (value == null) {
 			return null;

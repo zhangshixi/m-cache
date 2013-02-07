@@ -28,6 +28,10 @@ public class CallbackCache extends CacheDecorator {
 	}
 
 	// ---- put methods
+	public boolean put(Object param, KeyGenerator key, Object value) {
+	    return put(generateKey(param, key), value);
+	}
+	
 	public boolean put(Object param, KeyGenerator key, ValueLoader<Object> value) {
 	    return put(generateKey(param, key), loadValue(param, value));
 	}

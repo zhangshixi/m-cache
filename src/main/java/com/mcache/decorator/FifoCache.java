@@ -15,10 +15,10 @@ public class FifoCache extends CacheDecorator {
 	private int _size;
     private final LinkedList<String> _keyList;
     
-    public static final int DEFAULT_SIZE = 1024;
+    public static final int DEF_SIZE = 1024;
 
     public FifoCache(Cache cache) {
-        this(cache, DEFAULT_SIZE);
+        this(cache, DEF_SIZE);
     }
     
     public FifoCache(Cache cache, int size) {
@@ -145,7 +145,7 @@ public class FifoCache extends CacheDecorator {
 		return getDelegateCache().asyncDecrease(key, value);
 	}
     
-    // ---- private methods ------------------------------------------------------------------------
+    // ---- private methods
     private void cycleKeyList(String key, boolean async) {
         _keyList.addLast(key);
         if (_keyList.size() > _size) {

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -17,43 +16,68 @@ import com.opensymphony.oscache.web.filter.ExpiresRefreshPolicy;
 /**
  * Oscache repository engine driver implementation.
  */
-public class OsCache extends AbstractCache {
+public class OsCachedCache extends AbstractCache {
 	
 	/** pool configuration file */
 	private Properties _props;
-	
 	/** OSCache general administrator */
 	private GeneralCacheAdministrator _cache;
 	
-	// ---- constructors --------------------------------------------------
-	public OsCache(String id, URL url) throws IOException {
-		this(id, url.openStream());
+	private static final String DEF_CACHE_ID = OsCachedCache.class.getName();
+	
+	// ---- constructors
+    public OsCachedCache(Properties props) {
+        this(DEF_CACHE_ID ,props);
+    }
+    
+    public OsCachedCache(String id, Properties props) {
+        super(id);
+        _props = props;
+    }
+    
+    public OsCachedCache(String id, Properties props, int asyncThreadPoolSize) {
+        super(id);
+        _props = props;
+        setAsyncThreadPoolSize(asyncThreadPoolSize);
+    }
+    
+	public OsCachedCache(File file) throws IOException {
+		this(DEF_CACHE_ID, new FileInputStream(file));
 	}
 	
-	public OsCache(String id, File file) throws IOException {
-		this(id, new FileInputStream(file));
+	public OsCachedCache(String id, File file) throws IOException {
+	    this(id, file, DEF_ASYNC_THREAD_POOL_SIZE);
 	}
 	
-	public OsCache(String id, String classpath) throws IOException {
-		this(id, OsCache.class.getResourceAsStream(classpath));
+	public OsCachedCache(String id, File file, int asyncThreadPoolSize) throws IOException {
+	    this(id, new FileInputStream(file), asyncThreadPoolSize);
 	}
 	
-	public OsCache(String id, InputStream input) throws IOException {
-		super(id);
-		_props = new Properties();
-		try {
-			_props.load(input);
-		} finally {
-			input.close();
-		}
+	public OsCachedCache(String classpath) throws IOException {
+		this(DEF_CACHE_ID, OsCachedCache.class.getResourceAsStream(classpath));
 	}
 	
-	public OsCache(String id, Properties props) {
-		super(id);
-		_props = props;
+	public OsCachedCache(String id, String classpath) throws IOException {
+	    this(id, classpath, DEF_ASYNC_THREAD_POOL_SIZE);
 	}
 	
-	// ---- methods implementation --------------------------------------------------
+	public OsCachedCache(String id, String classpath, int asyncThreadPoolSize) throws IOException {
+	    this(id, OsCachedCache.class.getResourceAsStream(classpath), asyncThreadPoolSize);
+	}
+	
+	public OsCachedCache(InputStream input) throws IOException {
+		this(DEF_CACHE_ID, input);
+	}
+	
+	public OsCachedCache(String id, InputStream input) throws IOException {
+	    this(id, input, DEF_ASYNC_THREAD_POOL_SIZE);
+	}
+	
+	public OsCachedCache(String id, InputStream input, int asyncThreadPoolSize) throws IOException {
+	    this(id, getProperties(input), asyncThreadPoolSize);
+	}
+	
+    // ---- implement methods
 	@Override
 	protected void doInitialize() {
 		if (_props == null) {
@@ -103,7 +127,7 @@ public class OsCache extends AbstractCache {
             throw new IllegalArgumentException("ExpiredTime should non-positive: " + expiredTime);
         }
         
-        _cache.putInCache(key, value, new ExpiresRefreshPolicy((int) expiredTime / 1000));
+        _cache.putInCache(key, value, new ExpiresRefreshPolicy((int) (expiredTime / 1000)));
         
         return true;
     }

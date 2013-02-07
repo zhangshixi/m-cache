@@ -15,15 +15,17 @@ import com.mcache.CasOperation;
  */
 public class VirtualCache extends AbstractCache {
 
+    // ---- constructors
 	public VirtualCache() {
 		this(VirtualCache.class.getName());
 	}
 
 	public VirtualCache(String id) {
 	    super(id);
-	    setThreadPoolSize(1);
+	    setAsyncThreadPoolSize(1);
 	}
 	
+    // ---- implement methods
 	@Override
 	protected void doInitialize() {
 	}

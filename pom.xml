@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 
 	<name>m-cache</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/zhangshixi/m-cache</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,10 +24,10 @@
 			<type>jar</type>
 			<scope>compile</scope>
 			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
+<!-- 				<exclusion> -->
+<!-- 					<groupId>commons-logging</groupId> -->
+<!-- 					<artifactId>commons-logging</artifactId> -->
+<!-- 				</exclusion> -->
 				<exclusion>
 					<groupId>log4j</groupId>
 					<artifactId>log4j</artifactId>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>com.michael</groupId>
 			<artifactId>m-toolkit-core</artifactId>
-			<version>1.0</version>
+			<version>1.0-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -76,6 +76,16 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.2</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.0.7</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.7</version>
 		</dependency>
 	
 		<!-- test scope -->

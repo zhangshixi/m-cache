@@ -4,9 +4,9 @@ import java.util.concurrent.Future;
 
 import com.mcache.CasOperation;
 
-public class EhCache extends AbstractCache {
+public class EhCachedCache extends AbstractCache {
 	
-	public EhCache(String id) {
+	public EhCachedCache(String id) {
 		super(id);
 	}
 

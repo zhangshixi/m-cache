@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,55 +47,79 @@ public class XMemcachedCache extends AbstractCache {
     
     private Loggers LOGGER = Loggers.getLoggers(XMemcachedCache.class);
     
-    public static final String DEFAULT_XMEMCACHED_CONFIG = "xmemcached.properties";
+    public static final String DEF_CACHE_ID = XMemcachedCache.class.getName();
+    public static final String DEF_XMEMCACHED_CONFIG = "/xmemcached.properties";
 	
-	// ---- constructors -----------------------------------------------------------------------------
+	// ---- constructors
+    public XMemcachedCache(Properties props) {
+        this(DEF_CACHE_ID, props);
+    }
+    
+    public XMemcachedCache(String id, Properties props) {
+        this(id, props, DEF_ASYNC_THREAD_POOL_SIZE);
+    }
+    
+    public XMemcachedCache(String id, Properties props, int asyncThreadPoolSize) {
+        super(id);
+        _props = props;
+        setAsyncThreadPoolSize(asyncThreadPoolSize);
+    }
+    
+    public XMemcachedCache(File file) throws IOException {
+        this(DEF_CACHE_ID, file);
+    }
+    
+    public XMemcachedCache(String id, File file) throws IOException {
+        this(id, file, DEF_ASYNC_THREAD_POOL_SIZE);
+    }
+    
+    public XMemcachedCache(String id, File file, int asyncThreadPoolSize) throws IOException {
+        this(id, new FileInputStream(file), asyncThreadPoolSize);
+    }
+    
+	public XMemcachedCache(String classpath) throws IOException {
+		this(DEF_CACHE_ID, classpath);
+	}
+	
 	public XMemcachedCache(String id, String classpath) throws IOException {
-		this(id, classpath, DEFAULT_THREAD_POOL_SIZE);
+	    this(id, classpath, DEF_ASYNC_THREAD_POOL_SIZE);
 	}
 	
-	public XMemcachedCache(String id, String classpath, int threadPoolSize) throws IOException {
-	    this(id, XMemcachedCache.class.getResourceAsStream(classpath), threadPoolSize); // FIXME:
+	public XMemcachedCache(String id, String classpath, int asyncThreadPoolSize) throws IOException {
+	    this(id, XMemcachedCache.class.getResourceAsStream(classpath), asyncThreadPoolSize); // FIXME:
 	}
 	
-	public XMemcachedCache(String id, URL url, int threadPoolSize) throws IOException {
-	    this(id, url.openStream(), threadPoolSize);
+	public XMemcachedCache(InputStream input) throws IOException {
+	    this(DEF_CACHE_ID, input);
 	}
 	
-	public XMemcachedCache(String id, File file, int threadPoolSize) throws IOException {
-	    this(id, new FileInputStream(file), threadPoolSize);
+	public XMemcachedCache(String id, InputStream input) throws IOException {
+	    this(id, input, DEF_ASYNC_THREAD_POOL_SIZE);
 	}
 	
-	public XMemcachedCache(String id, InputStream input, int threadPoolSize) throws IOException {
-	    this(id, getProperties(input), threadPoolSize);
+	public XMemcachedCache(String id, InputStream input, int asyncThreadPoolSize) throws IOException {
+	    this(id, getProperties(input), asyncThreadPoolSize);
 	}
 	
-	public XMemcachedCache(String id, Properties props, int threadPoolSize) {
-	    super(id);
-	    _props = props;
-	    setThreadPoolSize(threadPoolSize);
-	}
-	
-	
-	// ---- methods implementation -------------------------------------------------------------------
+	// ---- implement methods
 	@Override
 	protected void doInitialize() {
 	    Properties defaultProps = null;
 	    try {
             defaultProps = getProperties(
-                XMemcachedCache.class.getResource(DEFAULT_XMEMCACHED_CONFIG).openStream());
+                XMemcachedCache.class.getResource(DEF_XMEMCACHED_CONFIG).openStream());
         } catch (IOException e) {
             throw new IllegalArgumentException(
-                "XMemcached driver could not load default configuration: " + DEFAULT_XMEMCACHED_CONFIG, e);
+                "XMemcached could not load default configuration: " + DEF_XMEMCACHED_CONFIG, e);
         }
 	    
 	    final ConfigLoader config = new ConfigLoader().load(defaultProps).load(_props);
-	    LOGGER.debug("==> XMemcachedCacheDriver configurations: \n{0}", config.toString());
+	    LOGGER.debug("XMemcachedCache configurations: \n{0}", config.toString());
 	    
 	    try {
             initXMemcachedClient(config);
         } catch (IOException e) {
-            throw new CacheException("Startup XMemcached driver error!", e);
+            throw new CacheException("Startup XMemcached client driver error!", e);
         }
 	}
 
@@ -105,7 +128,7 @@ public class XMemcachedCache extends AbstractCache {
 	    try {
             _cache.shutdown();
         } catch (IOException e) {
-            throw new CacheException("Shutdown XMemcached driver error!", e);
+            throw new CacheException("Shutdown XMemcached client driver error!", e);
         }
 	}
 	
@@ -298,7 +321,7 @@ public class XMemcachedCache extends AbstractCache {
         }
     }
     
-    // ---- private methods --------------------------------------------------------------------------
+    // ---- private methods
     private void initXMemcachedClient(ConfigLoader config) throws IOException {
         MemcachedClientBuilder builder = new XMemcachedClientBuilder(
             config.getServers(), config.getWeigths());
@@ -318,7 +341,7 @@ public class XMemcachedCache extends AbstractCache {
     }
     
     
-    // ---- inner classes ----------------------------------------------------------------------------
+    // ---- inner classes
     private class XMemcachedCASOperation implements CASOperation<Object> {
         
         private CasOperation<Object> _operation;
@@ -339,7 +362,6 @@ public class XMemcachedCache extends AbstractCache {
         
     }
     
-
     public static final class ConfigLoader {
         
         public static final String PARAM_SERVERS               = "servers";

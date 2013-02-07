@@ -115,7 +115,7 @@ public class SerializeValueCache extends CacheDecorator {
 		return Collections.unmodifiableMap(resultMap);
 	}
 
-    // ---- private methods ------------------------------------------------------------------------------
+    // ---- private methods
     private byte[] serialize(Object target) {
         if (target == null) {
             return null;

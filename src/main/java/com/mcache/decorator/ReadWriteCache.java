@@ -326,6 +326,7 @@ public class ReadWriteCache extends CacheDecorator {
         }
     }
 
+    // ---- private methods
     private void lockRead() {
         _readWriteLock.readLock().lock();
     }
